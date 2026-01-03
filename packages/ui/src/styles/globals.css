@@ -41,14 +41,25 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Vintage Studio Theme Colors */
+  --studio-bg-dark: #1a1b1e;
+  --studio-surface: #25262b;
+  --studio-surface-light: #2c2e33;
+  --studio-accent: #ffae00;
+  --studio-accent-dim: #946c00;
+  --studio-text-main: #e1e3e6;
+  --studio-text-muted: #a0a0a0;
+  --studio-shadow-light: rgba(255, 255, 255, 0.05);
+  --studio-shadow-dark: rgba(0, 0, 0, 0.4);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.11 0.01 240);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
+  --card: oklch(0.145 0.005 240);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
+  --popover: oklch(0.145 0.005 240);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.985 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -56,8 +67,8 @@
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.8 0.15 75);
+  --accent-foreground: oklch(0.1 0 0);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
   --border: oklch(0.269 0 0);
@@ -124,4 +135,136 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Vintage Studio Utilities */
+.glass-panel {
+  background: rgba(20, 30, 45, 0.55);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.console-surface {
+  background: linear-gradient(145deg, #2a2c30, #1f2024);
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 50px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.lcd-screen {
+  background: #111;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+}
+
+.lcd-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.headline-caps {
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tech-label {
+  font-family: var(--font-mono);
+  letter-spacing: 2px;
+  font-weight: bold;
+  font-size: 0.7em;
+  color: #666;
+}
+
+/* LED Indicator */
+@keyframes led-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 15px currentColor;
+  }
+  50% {
+    opacity: 0.4;
+    box-shadow: 0 0 2px currentColor;
+  }
+}
+
+.led-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: led-pulse 2s infinite ease-in-out;
+}
+
+/* VU Meter Animation */
+@keyframes vu-bounce {
+  0% { transform: rotate(-35deg); }
+  20% { transform: rotate(-10deg); }
+  40% { transform: rotate(-25deg); }
+  60% { transform: rotate(15deg); }
+  80% { transform: rotate(5deg); }
+  100% { transform: rotate(25deg); }
+}
+
+.vu-needle {
+  animation: vu-bounce 0.4s infinite alternate ease-in-out;
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+}
+
+/* Noise Texture */
+.noise-texture {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>');
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(to right, #ffffff, #a0a0a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section Spacing */
+.section-padding {
+  @apply py-20 px-4 md:py-32;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--studio-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--studio-surface);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--studio-surface-light);
 }
