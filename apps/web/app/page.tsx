@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { HeroConsole } from "@/components/hero-console"
 import { FeatureGrid } from "@/components/feature-grid"
 import { APIShowcase } from "@/components/api-showcase"
@@ -33,19 +34,23 @@ export default function Page() {
           </NavbarNav>
 
           <NavbarActions>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-[var(--studio-text-main)] hover:text-[var(--studio-accent)] transition-colors font-semibold"
-            >
-              Sign In
-            </Button>
-            <Button 
-              size="sm" 
-              className="bg-[var(--studio-accent)] hover:bg-[var(--studio-accent-dim)] text-black font-bold uppercase tracking-wide shadow-[0_0_20px_rgba(255,174,0,0.3)] hover:shadow-[0_0_30px_rgba(255,174,0,0.5)] transition-all"
-            >
-              Start Free
-            </Button>
+            <Link href="/signin">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-[var(--studio-text-main)] hover:text-[var(--studio-accent)] transition-colors font-semibold"
+              >
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/signup">
+              <Button 
+                size="sm" 
+                className="bg-[var(--studio-accent)] hover:bg-[var(--studio-accent-dim)] text-black font-bold uppercase tracking-wide shadow-[0_0_20px_rgba(255,174,0,0.3)] hover:shadow-[0_0_30px_rgba(255,174,0,0.5)] transition-all"
+              >
+                Start Free
+              </Button>
+            </Link>
           </NavbarActions>
         </NavbarContainer>
       </Navbar>
