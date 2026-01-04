@@ -1,22 +1,24 @@
-import { Geist, Geist_Mono, DM_Serif_Display } from "next/font/google"
+import { Merriweather, Open_Sans, Courier_Prime } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { Providers } from "@/components/providers"
 
-const fontSans = Geist({
+const fontHeading = Merriweather({
+  weight: ["400", "700", "900"],
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-heading",
 })
 
-const fontMono = Geist_Mono({
+const fontBody = Open_Sans({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+  variable: "--font-body",
+})
+
+const fontMono = Courier_Prime({
+  weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-mono",
-})
-
-const fontDisplay = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-display",
 })
 
 export default function RootLayout({
@@ -27,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontMono.variable} ${fontDisplay.variable} font-sans antialiased `}
+        className={`${fontHeading.variable} ${fontBody.variable} ${fontMono.variable} font-body antialiased`}
       >
         <Providers>{children}</Providers>
       </body>
