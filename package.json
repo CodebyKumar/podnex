@@ -22,5 +22,15 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "sharp"
+    ],
+    "onlyBuiltDependencies": [
+      "@prisma/client"
+    ]
+  }
 }

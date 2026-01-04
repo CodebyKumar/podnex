@@ -27,10 +27,12 @@ out/
 build
 dist
 
-
 # Debug
 npm-debug.log*
 
 # Misc
 .DS_Store
 *.pem
+
+# Bun (not used - pnpm only)
+bun.lockb
