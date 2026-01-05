@@ -63,11 +63,19 @@ const Navbar = () => {
 
             {/* CTA Buttons */}
             <div className="hidden md:flex items-center gap-4">
-              <Button variant="ghost" className="text-sm font-light h-9 px-4 rounded-full">
-                Sign In
+              <Button 
+                variant="ghost" 
+                className="text-sm font-light h-9 px-4 rounded-full"
+                asChild
+              >
+                <Link href="/signin">Sign In</Link>
               </Button>
-              <Button variant="primary" className="text-sm h-9 px-6 rounded-full">
-                Get Started
+              <Button 
+                variant="primary" 
+                className="text-sm h-9 px-6 rounded-full"
+                asChild
+              >
+                <Link href="/signup">Get Started</Link>
               </Button>
             </div>
 
@@ -100,11 +108,21 @@ const Navbar = () => {
                   </a>
                 ))}
                 <div className="flex flex-col gap-3 pt-4 border-t border-border/50 mt-2">
-                  <Button variant="ghost" className="justify-start text-sm font-light rounded-xl">
-                    Sign In
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start text-sm font-light rounded-xl"
+                    asChild
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Link href="/signin">Sign In</Link>
                   </Button>
-                  <Button variant="primary" className="text-sm rounded-xl">
-                    Get Started
+                  <Button 
+                    variant="primary" 
+                    className="text-sm rounded-xl"
+                    asChild
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Link href="/signup">Get Started</Link>
                   </Button>
                 </div>
               </div>
