@@ -1,14 +1,21 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { errorHandler, notFound } from "./middleware/index.js";
+import userRoutes from "./routes/user.routes.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Security & Performance Middleware
+app.use(helmet());
+app.use(compression());
 
 // CORS - MUST come before Better Auth handler
 app.use(
@@ -21,22 +28,23 @@ app.use(
 // Better Auth handler - MUST come before express.json()
 app.all("/api/auth/*", toNodeHandler(auth));
 
-// Other middleware (after Better Auth)
+// Body parsing (after Better Auth)
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Health check route
+// Routes
 app.get("/api/health", (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     message: "API is running",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
-// 404 handler
-app.use(notFound);
+app.use("/api/v1/user", userRoutes);
 
-// Error handler (must be last)
+// Error handlers (must be last)
+app.use(notFound);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
