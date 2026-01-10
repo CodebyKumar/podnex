@@ -1,8 +1,10 @@
 "use client";
 
-import { Card } from "@workspace/ui/components/card";
-import { Button } from "@workspace/ui/components/button";
+import { Podcast, ViewMode } from "@/lib/types/podcast.types";
+import { formatDistanceToNow, formatDuration } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 import { Progress } from "@workspace/ui/components/progress";
+import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,21 +12,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { StatusBadge } from "./StatusBadge";
-import { Podcast, ViewMode } from "@/lib/types/podcast.types";
-import { formatDistanceToNow } from "@/lib/date-utils";
 import {
   Play,
-  MoreVertical,
+  Clock,
+  MoreHorizontal,
   Download,
-  FileText,
   Share2,
-  RotateCw,
   Trash2,
+  RefreshCw,
   Eye,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Clock3,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 interface PodcastCardProps {
   podcast: Podcast;
@@ -35,6 +36,37 @@ interface PodcastCardProps {
   onViewDetails?: (podcast: Podcast) => void;
 }
 
+const STATUS_CONFIG = {
+  COMPLETED: {
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    icon: CheckCircle2,
+    label: "Completed",
+  },
+  PROCESSING: {
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+    icon: Loader2,
+    label: "Processing",
+  },
+  QUEUED: {
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+    icon: Clock3,
+    label: "Queued",
+  },
+  FAILED: {
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    border: "border-red-500/20",
+    icon: AlertCircle,
+    label: "Failed",
+  },
+};
+
 export function PodcastCard({
   podcast,
   viewMode = "grid",
@@ -43,264 +75,301 @@ export function PodcastCard({
   onRetry,
   onViewDetails,
 }: PodcastCardProps) {
-  const isCompleted = podcast.status === "COMPLETED";
-  const isProcessing = podcast.status === "PROCESSING";
-  const isFailed = podcast.status === "FAILED";
-  const isQueued = podcast.status === "QUEUED";
+  const statusConfig = STATUS_CONFIG[podcast.status as keyof typeof STATUS_CONFIG];
+  const StatusIcon = statusConfig.icon;
+  const isPlayable = podcast.status === "COMPLETED" && podcast.audioUrl;
 
-  const formatDuration = (seconds?: number) => {
-    if (!seconds) return "--:--";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const getTitle = () => {
-    if (podcast.title) return podcast.title;
-    // Generate title from first 50 chars of content
-    return podcast.noteContent.slice(0, 50) + (podcast.noteContent.length > 50 ? "..." : "");
-  };
-
-  // List view - horizontal bar layout matching documentation
+  // List View - Three-Zone Fixed Layout
   if (viewMode === "list") {
-    // Status icon based on status
-    const getStatusIcon = () => {
-      if (isCompleted) return "○";
-      if (isProcessing) return "●";
-      if (isFailed) return "✕";
-      return "○"; // For queued
-    };
-
     return (
-      <div className="border-b border-border/50 hover:bg-card/50 transition-colors">
-        <div className="px-4 py-3">
-          {/* Main Row - Status Icon, Title, Status, Duration, Date, Actions */}
-          <div className="flex items-center gap-4">
-            {/* Status Icon */}
-            <div className="flex-shrink-0 w-6 text-center">
-              <span className={cn(
-                "text-lg font-sans",
-                isCompleted && "text-green-400",
-                isProcessing && "text-yellow-400",
-                isFailed && "text-red-400",
-                isQueued && "text-muted-foreground"
-              )}>
-                {getStatusIcon()}
-              </span>
-            </div>
-
-            {/* Title - Takes most space */}
-            <div className="flex-1 min-w-0">
-              <button
-                onClick={() => onViewDetails?.(podcast)}
-                className="text-left w-full group/title"
-              >
-                <h3 className="font-serif text-base font-medium truncate text-foreground group-hover/title:text-primary transition-colors">
-                  {getTitle()}
-                </h3>
-              </button>
-            </div>
-
-            {/* Status Badge */}
-            <div className="flex-shrink-0">
-              <StatusBadge status={podcast.status} />
-            </div>
-
-            {/* Duration - Fixed width */}
-            <div className="flex-shrink-0 w-16 text-right">
-              <span className="text-sm text-muted-foreground font-sans">
-                {formatDuration(podcast.audioDuration)}
-              </span>
-            </div>
-
-            {/* Created Date - Fixed width */}
-            <div className="flex-shrink-0 w-20 text-right hidden md:block">
-              <span className="text-sm text-muted-foreground font-sans">
-                {new Date(podcast.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            </div>
-
-            {/* Actions Menu */}
-            <div className="flex-shrink-0">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10">
-                    <MoreVertical className="h-3.5 w-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => onViewDetails?.(podcast)}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Details
-                  </DropdownMenuItem>
-                  
-                  {isCompleted && (
-                    <>
-                      <DropdownMenuItem onClick={() => onPlay?.(podcast)}>
-                        <Play className="h-4 w-4 mr-2" />
-                        Play
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <FileText className="h-4 w-4 mr-2" />
-                        View Transcript
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share
-                      </DropdownMenuItem>
-                    </>
-                  )}
-
-                  {isFailed && (
-                    <DropdownMenuItem onClick={() => onRetry?.(podcast)}>
-                      <RotateCw className="h-4 w-4 mr-2" />
-                      Retry
-                    </DropdownMenuItem>
-                  )}
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => onDelete?.(podcast)}
-                    className="text-red-400 focus:text-red-400"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Second Row - Progress Bar (indented, only for processing) */}
-          {isProcessing && podcast.progress !== undefined && (
-            <div className="flex items-center gap-4 mt-2 ml-10">
-              <div className="flex-1 max-w-md">
-                <div className="flex items-center gap-3">
-                  <Progress value={podcast.progress} className="h-1.5 flex-1" />
-                  <span className="text-xs text-muted-foreground font-sans whitespace-nowrap">
-                    {podcast.progress}% - {podcast.currentStep || "Generating audio"}
-                  </span>
-                </div>
-              </div>
+      <div 
+        className="group flex items-stretch rounded-xl border border-border bg-card hover:border-border/60 transition-colors overflow-hidden shadow-sm hover:shadow-md cursor-pointer"
+        style={{ minHeight: "88px" }}
+        onClick={() => onViewDetails?.(podcast)}
+      >
+        {/* LEFT ZONE: Status/Play Icon - Fixed Width */}
+        <div 
+          className="flex items-center justify-center bg-muted/30 border-r border-border/50 flex-shrink-0"
+          style={{ width: "88px" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {isPlayable ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlay?.(podcast);
+              }}
+              className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 transition-transform shadow-md"
+              aria-label={`Play ${podcast.title || "podcast"}`}
+            >
+              <Play className="h-5 w-5 ml-0.5" fill="currentColor" />
+            </button>
+          ) : (
+            <div className={cn(
+              "w-12 h-12 rounded-full flex items-center justify-center border-2",
+              statusConfig.bg,
+              statusConfig.border
+            )}>
+              <StatusIcon className={cn(
+                "h-5 w-5",
+                statusConfig.color,
+                podcast.status === "PROCESSING" && "animate-spin"
+              )} />
             </div>
           )}
+        </div>
+
+        {/* CENTER ZONE: Content - Flexible Width */}
+        <div className="flex-1 min-w-0 px-4 py-3 flex flex-col justify-center gap-2">
+          {/* Title - Dominant Element */}
+          <h3 className="font-semibold text-base text-foreground leading-tight truncate">
+            {podcast.title || "Untitled Podcast"}
+          </h3>
+          
+          {/* Metadata Row - Single Line */}
+          <div className="flex items-center gap-3 text-xs">
+            {/* STATUS BADGE: State indicator (Completed/Processing/Failed/Queued) */}
+            <div className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border font-medium",
+              statusConfig.bg,
+              statusConfig.color,
+              statusConfig.border
+            )}>
+              <StatusIcon className={cn(
+                "h-3.5 w-3.5 flex-shrink-0",
+                podcast.status === "PROCESSING" && "animate-spin"
+              )} />
+              <span className="whitespace-nowrap">{statusConfig.label}</span>
+            </div>
+            
+            {/* Retry Button - Beside Failed Badge */}
+            {podcast.status === "FAILED" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRetry?.(podcast);
+                }}
+                className="text-amber-600 border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/50 h-7 px-2.5 text-xs font-semibold"
+                aria-label="Retry podcast generation"
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                Retry
+              </Button>
+            )}
+            
+            {/* Duration - Only for Completed */}
+            {podcast.audioDuration && podcast.status === "COMPLETED" && (
+              <div className="inline-flex items-center gap-1 text-muted-foreground/90 font-medium">
+                <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="whitespace-nowrap">{formatDuration(podcast.audioDuration)}</span>
+              </div>
+            )}
+
+            {/* Progress - Only for Processing */}
+            {podcast.status === "PROCESSING" && (
+              <span className="text-muted-foreground/90 font-medium">
+                {podcast.progress || 0}% • {podcast.currentStep || "Processing"}
+              </span>
+            )}
+          </div>
+
+          {/* PROGRESS BAR: Linear completion indicator (separate from status badge) */}
+          {podcast.status === "PROCESSING" && (
+            <div className="max-w-md mt-1">
+              <Progress value={podcast.progress || 0} className="h-1.5 bg-muted [&>div]:border [&>div]:border-white [&>div]:shadow-sm" />
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT ZONE: Time & Actions - Fixed Width */}
+        <div 
+          className="flex items-center gap-3 px-4 border-l border-border/50 bg-muted/20 flex-shrink-0"
+          style={{ width: "200px" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Timestamp - Aligned Vertically */}
+          <div className="flex-1 min-w-0 text-xs text-muted-foreground/90 font-medium text-right">
+            <span suppressHydrationWarning className="block truncate">
+              {formatDistanceToNow(new Date(podcast.createdAt), { addSuffix: true })}
+            </span>
+          </div>
+
+          {/* Actions Group */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Overflow Menu - Always Visible */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  aria-label={`More options for ${podcast.title || "podcast"}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails?.(podcast);
+                }}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Details
+                </DropdownMenuItem>
+                {isPlayable && (
+                  <>
+                    <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Audio
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share Podcast
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {podcast.status === "FAILED" && (
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onRetry?.(podcast);
+                  }}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Retry Generation
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(podcast);
+                  }}
+                  className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Podcast
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Grid view - original card layout
+  // Grid View - Stable, Consistent Layout
   return (
-    <Card className="group overflow-hidden border-border/50 bg-card hover:border-border transition-all duration-200">
-      {/* Thumbnail */}
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        <Image
-          src="/placeholder-podcast.svg"
-          alt={getTitle()}
-          fill
-          className="object-cover transition-transform duration-200 group-hover:scale-105"
-          onError={(e) => {
-            // Fallback to gradient background
-            e.currentTarget.style.display = "none";
-          }}
-        />
-        {/* Gradient overlay for better badge visibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-        
-        {/* Status Badge - Top Right */}
-        <div className="absolute top-3 right-3 z-10">
-          <StatusBadge status={podcast.status} />
+    <div className="group flex flex-col h-full rounded-xl border border-border bg-card hover:border-border/60 transition-colors overflow-hidden shadow-sm hover:shadow-md">
+      {/* Header: Status Badge & Metadata - Fixed Height */}
+      <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-border/30" style={{ minHeight: "64px" }}>
+        {/* STATUS BADGE: Colored label showing podcast state (Completed/Processing/Failed/Queued) */}
+        <div className={cn(
+          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm",
+          statusConfig.bg,
+          statusConfig.color,
+          statusConfig.border
+        )}>
+          <StatusIcon className={cn(
+            "h-3.5 w-3.5 flex-shrink-0",
+            podcast.status === "PROCESSING" && "animate-spin"
+          )} />
+          <span className="whitespace-nowrap">{statusConfig.label}</span>
         </div>
 
-        {/* Play Button Overlay - Only for completed */}
-        {isCompleted && (
-          <button
-            onClick={() => onPlay?.(podcast)}
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40"
-          >
-            <div className="rounded-full bg-primary text-primary-foreground p-4 hover:scale-110 transition-transform">
-              <Play className="h-6 w-6 fill-current" />
-            </div>
-          </button>
+        {/* Duration Badge - Only for Completed */}
+        {podcast.audioDuration && podcast.status === "COMPLETED" && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-muted text-foreground/80 border border-border/50 shadow-sm">
+            <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="whitespace-nowrap">{formatDuration(podcast.audioDuration)}</span>
+          </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4 space-y-3">
-        {/* Title and Metadata */}
-        <div className="space-y-2">
-          <h3 className="font-serif text-lg font-medium line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-            {getTitle()}
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground font-sans">
-            <span>{formatDuration(podcast.audioDuration)}</span>
-            <span>•</span>
-            <span>{formatDistanceToNow(new Date(podcast.createdAt), { addSuffix: true })}</span>
+      {/* Content Area - Fixed Structure for All States */}
+      <div className="flex flex-col flex-1 px-4 py-4">
+        {/* Title - Fixed Position, Always Same Location */}
+        <h3 className="font-semibold text-base text-foreground leading-snug mb-3" style={{ minHeight: "44px" }}>
+          <span className="line-clamp-2">
+            {podcast.title || "Untitled Podcast"}
+          </span>
+        </h3>
+
+        {/* PROGRESS BAR: Visual indicator of processing completion (0-100%) */}
+        {podcast.status === "PROCESSING" && (
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-muted-foreground font-medium truncate pr-2">
+                {podcast.currentStep || "Processing podcast"}
+              </span>
+              <span className="font-bold text-amber-600 shrink-0">
+                {podcast.progress || 0}%
+              </span>
+            </div>
+            <div className="relative">
+              <Progress value={podcast.progress || 0} className="h-1.5 bg-muted [&>div]:border [&>div]:border-white [&>div]:shadow-sm" />
+            </div>
           </div>
+        )}
+
+        {/* Error Message - One Line Max, Only for Failed */}
+        {podcast.status === "FAILED" && (
+          <div className="text-xs text-red-500/90 font-medium mb-3 line-clamp-1">
+            Generation failed. Please try again.
+          </div>
+        )}
+        
+        {/* Metadata - Pushed to Bottom */}
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground/90 mt-auto">
+          <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+          <span suppressHydrationWarning className="truncate">
+            {formatDistanceToNow(new Date(podcast.createdAt), { addSuffix: true })}
+          </span>
         </div>
+      </div>
 
-        {/* Progress Bar - Only for processing */}
-        {isProcessing && podcast.progress !== undefined && (
-          <div className="space-y-2">
-            <Progress value={podcast.progress} className="h-2" />
-            <p className="text-xs text-muted-foreground font-sans">
-              {podcast.currentStep || "Processing..."} • {podcast.progress}%
-            </p>
+      {/* Footer: Actions - Consistent Height, Subtle Divider */}
+      <div className="mt-auto border-t border-border/30 bg-muted/20">
+        <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ minHeight: "56px" }}>
+          {/* Left: Primary Action - Reserved Space */}
+          <div className="flex items-center min-w-[80px]">
+            {podcast.status === "FAILED" && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onRetry?.(podcast)}
+                className="bg-amber-600 hover:bg-amber-700 text-white h-8 px-3 text-xs font-semibold shadow-sm"
+                aria-label="Retry podcast generation"
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                Retry
+              </Button>
+            )}
+            {podcast.status === "COMPLETED" && isPlayable && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onPlay?.(podcast)}
+                className="h-8 px-3 text-xs font-semibold shadow-sm"
+                aria-label={`Play ${podcast.title || "podcast"}`}
+              >
+                <Play className="h-3.5 w-3.5 mr-1.5" fill="currentColor" />
+                Play
+              </Button>
+            )}
           </div>
-        )}
 
-        {/* Error Message - Only for failed */}
-        {isFailed && podcast.errorMessage && (
-          <p className="text-xs text-red-400 font-sans line-clamp-2">
-            {podcast.errorMessage}
-          </p>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-2">
-          {isCompleted && (
-            <Button
-              onClick={() => onPlay?.(podcast)}
-              size="sm"
-              className="flex-1 font-sans"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Play
-            </Button>
-          )}
-
-          {isFailed && (
-            <Button
-              onClick={() => onRetry?.(podcast)}
-              size="sm"
-              variant="outline"
-              className="flex-1 font-sans"
-            >
-              <RotateCw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
-          )}
-
-          {(isProcessing || isQueued) && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 font-sans"
-              disabled
-            >
-              {isProcessing ? "Processing..." : "Queued"}
-            </Button>
-          )}
-
-          {/* Actions Menu */}
+          {/* Right: More Menu - Always Visible */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
-                <MoreVertical className="h-4 w-4" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 ml-auto"
+                aria-label={`More options for ${podcast.title || "podcast"}`}
+              >
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -308,47 +377,36 @@ export function PodcastCard({
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
-              
-              {isCompleted && (
+              {isPlayable && (
                 <>
-                  <DropdownMenuItem onClick={() => onPlay?.(podcast)}>
-                    <Play className="h-4 w-4 mr-2" />
-                    Play
-                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <FileText className="h-4 w-4 mr-2" />
-                    View Transcript
+                    Download Audio
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Share2 className="h-4 w-4 mr-2" />
-                    Share
+                    Share Podcast
                   </DropdownMenuItem>
                 </>
               )}
-
-              {isFailed && (
+              {podcast.status === "FAILED" && (
                 <DropdownMenuItem onClick={() => onRetry?.(podcast)}>
-                  <RotateCw className="h-4 w-4 mr-2" />
-                  Retry
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry Generation
                 </DropdownMenuItem>
               )}
-
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onDelete?.(podcast)}
-                className="text-red-400 focus:text-red-400"
+                className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Delete Podcast
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
