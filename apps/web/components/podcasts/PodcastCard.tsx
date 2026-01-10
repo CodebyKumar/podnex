@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import { StatusBadge } from "./StatusBadge";
-import { Podcast } from "@/lib/types/podcast.types";
+import { Podcast, ViewMode } from "@/lib/types/podcast.types";
 import { formatDistanceToNow } from "@/lib/date-utils";
 import {
   Play,
@@ -28,6 +28,7 @@ import Image from "next/image";
 
 interface PodcastCardProps {
   podcast: Podcast;
+  viewMode?: ViewMode;
   onPlay?: (podcast: Podcast) => void;
   onDelete?: (podcast: Podcast) => void;
   onRetry?: (podcast: Podcast) => void;
@@ -36,6 +37,7 @@ interface PodcastCardProps {
 
 export function PodcastCard({
   podcast,
+  viewMode = "grid",
   onPlay,
   onDelete,
   onRetry,
@@ -59,6 +61,139 @@ export function PodcastCard({
     return podcast.noteContent.slice(0, 50) + (podcast.noteContent.length > 50 ? "..." : "");
   };
 
+  // List view - horizontal bar layout matching documentation
+  if (viewMode === "list") {
+    // Status icon based on status
+    const getStatusIcon = () => {
+      if (isCompleted) return "○";
+      if (isProcessing) return "●";
+      if (isFailed) return "✕";
+      return "○"; // For queued
+    };
+
+    return (
+      <div className="border-b border-border/50 hover:bg-card/50 transition-colors">
+        <div className="px-4 py-3">
+          {/* Main Row - Status Icon, Title, Status, Duration, Date, Actions */}
+          <div className="flex items-center gap-4">
+            {/* Status Icon */}
+            <div className="flex-shrink-0 w-6 text-center">
+              <span className={cn(
+                "text-lg font-sans",
+                isCompleted && "text-green-400",
+                isProcessing && "text-yellow-400",
+                isFailed && "text-red-400",
+                isQueued && "text-muted-foreground"
+              )}>
+                {getStatusIcon()}
+              </span>
+            </div>
+
+            {/* Title - Takes most space */}
+            <div className="flex-1 min-w-0">
+              <button
+                onClick={() => onViewDetails?.(podcast)}
+                className="text-left w-full group/title"
+              >
+                <h3 className="font-serif text-base font-medium truncate text-foreground group-hover/title:text-primary transition-colors">
+                  {getTitle()}
+                </h3>
+              </button>
+            </div>
+
+            {/* Status Badge */}
+            <div className="flex-shrink-0">
+              <StatusBadge status={podcast.status} />
+            </div>
+
+            {/* Duration - Fixed width */}
+            <div className="flex-shrink-0 w-16 text-right">
+              <span className="text-sm text-muted-foreground font-sans">
+                {formatDuration(podcast.audioDuration)}
+              </span>
+            </div>
+
+            {/* Created Date - Fixed width */}
+            <div className="flex-shrink-0 w-20 text-right hidden md:block">
+              <span className="text-sm text-muted-foreground font-sans">
+                {new Date(podcast.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            </div>
+
+            {/* Actions Menu */}
+            <div className="flex-shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10">
+                    <MoreVertical className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => onViewDetails?.(podcast)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </DropdownMenuItem>
+                  
+                  {isCompleted && (
+                    <>
+                      <DropdownMenuItem onClick={() => onPlay?.(podcast)}>
+                        <Play className="h-4 w-4 mr-2" />
+                        Play
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <FileText className="h-4 w-4 mr-2" />
+                        View Transcript
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                    </>
+                  )}
+
+                  {isFailed && (
+                    <DropdownMenuItem onClick={() => onRetry?.(podcast)}>
+                      <RotateCw className="h-4 w-4 mr-2" />
+                      Retry
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => onDelete?.(podcast)}
+                    className="text-red-400 focus:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {/* Second Row - Progress Bar (indented, only for processing) */}
+          {isProcessing && podcast.progress !== undefined && (
+            <div className="flex items-center gap-4 mt-2 ml-10">
+              <div className="flex-1 max-w-md">
+                <div className="flex items-center gap-3">
+                  <Progress value={podcast.progress} className="h-1.5 flex-1" />
+                  <span className="text-xs text-muted-foreground font-sans whitespace-nowrap">
+                    {podcast.progress}% - {podcast.currentStep || "Generating audio"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Grid view - original card layout
   return (
     <Card className="group overflow-hidden border-border/50 bg-card hover:border-border transition-all duration-200">
       {/* Thumbnail */}
