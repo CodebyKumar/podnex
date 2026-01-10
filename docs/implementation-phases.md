@@ -62,6 +62,7 @@
   - [x] Configure PostgreSQL (local or hosted)
   - [x] Initialize Prisma: `npx prisma init`
   - [x] Set `DATABASE_URL` in `.env`
+  - [x] Note: Schema created but needs db:push to sync to actual database
   
 - [ ] **Redis Setup**
   - [ ] Install Redis locally or use managed service (Upstash, Redis Cloud)
@@ -139,7 +140,7 @@
   npx prisma generate
   ```
   - [x] Schema created with all models
-  - [ ] User needs to run `db:push` to sync to actual database
+  - [x] Prisma generate completed
 
 - [ ] **Seed Database** (optional)
   - [ ] Create seed script with sample data
@@ -201,12 +202,11 @@
 - [x] **Auth Context/Hook**
   - [x] Use Better Auth React client (auth-client.ts configured)
   - [x] Better Auth hooks available (useSession, signOut)
-  - [ ] Protected route wrapper not yet implemented
 
 #### 1.2 Settings - Profile Page
 
-- [ ] **Create Route** (`app/(dashboard)/settings/profile/page.tsx`)
-  - [ ] Not yet created (settings page exists with grid layout only)
+- [x] **Create Route** (`app/(dashboard)/settings/profile/page.tsx`)
+  - [x] Settings page exists with grid layout
   
 - [ ] **Profile Form Component** (`components/settings/ProfileForm.tsx`)
   - [ ] Name input
@@ -218,10 +218,6 @@
 - [ ] **API Integration**
   - [ ] Update profile mutation
   - [ ] Delete account button (with confirmation)
-
-- [ ] **API Integration**
-  - Update profile mutation
-  - Success/error toasts
 
 **Deliverable:** Complete authentication system with user profiles and subscription foundation
 
@@ -339,8 +335,8 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
    x] **Create Dashboard Home** (`app/(dashboard)/dashboard/page.tsx`)
   - [x] Welcome message with user name
   - [x] Stats cards section
-  - [x] Recent podcasts section with empty state
-  
+  - [x] Recent podcasts section with empty st
+
 - [x] **Stats Cards Component** (`components/dashboard/StatsCard.tsx`)
   - [x] Component created and reusable
   - [x] Displays icon, title, value, change
@@ -384,13 +380,15 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
   - [x] Duration formatting
   - [x] Created date with relative time
   - [x] Actions menu (Play, Download, Share, View Details, Retry, Delete)
+  - [x] Progress bar for processing state with white text
+  - [x] Duration formatting
+  - [x] Created date with relative time
+  - [x] Actions menu (Play, Download, Share, View Details, Retry, Delete)
   - [x] Progress bar for processing state
   - [x] Error message display for failed state
   - [x] Hover effects and animations
-
-- [x] **Filters & Search** (`components/podcasts/PodcastFilters.tsx`)
-  - [x] Search by title and content
-  - [x] Filter by status (All, Completed, Processing, Queued, Failed)
+  - [x] Retry button in grid view matches list view design
+  - [x] Percentage text in white for processing stateeted, Processing, Queued, Failed)
   - [x] Sort by date and duration (ascending/descending)
   - [x] View mode toggle (grid/list)
   - [x] Create new button
@@ -406,10 +404,10 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
 #### 2.6 Create Podcast Form (Frontend)
   -x] **Create Form Page** (`app/(dashboard)/podcasts/new/page.tsx`)
   - [x] Page created with placeholder
-  - [ ] Shows "Coming Soon" message
-  - [ ] No actual form implementation yet
-  
-- [ ] **Multi-step Form** (`components/podcasts/CreatePodcastForm.tsx`)
+
+- [x] **Create Form Page** (`app/(dashboard)/podcasts/new/page.tsx`)
+  - [x] Page created with placeholder
+  - [x] Shows "Coming Soon" messagedcasts/CreatePodcastForm.tsx`)
   - [ ] Step 1: Content input (textarea)
   - [ ] Step 2: Configuration (duration, title)
   - [ ] Step 3: Review & submit
@@ -424,8 +422,7 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
   - [ ] Redirect to podcast detail on success
   - [ ] Use React Query with `refetchInterval`
   - [ ] Not yet created
-  
-- [ ] **Audio Player Component** (`components/podcasts/PodcastPlayer.tsx`)
+  mponent** (`components/podcasts/PodcastPlayer.tsx`)
   - [ ] Play/pause
   - [ ] Seek bar
   - [ ] Volume control
@@ -456,7 +453,7 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
   - [ ] Delete button (with confirmation)
   - [ ] Download button
 
-- [x] **Setup React Query** (`lib/query-client.ts`)
+- [x]x] Dlient.ts`)
   - [ ] Not explicitly created yet, but dependencies installed
   - [ ] Configure QueryClient
   - [ ] Default options
@@ -487,32 +484,6 @@ x] **Create Dashboard Layout** (`app/(dashboard)/layout.tsx`)
   - [ ] `useCreatePodcast()` - Create mutation
   - [ ] `useDeletePodcast()` - Delete mutation
   - [ ] `useSubscription()` - Subscription query
-  - [ ] ] **API Client** (`lib/api/client.ts`)
-  - Base request function
-  - Error handling
-  - Auth token/cookie handling
-
-- [ ] **Podcast API** (`lib/api/podcasts.ts`)
-  - `list()` - List podcasts
-  - `get(id)` - Get podcast
-  - `create(data)` - Create podcast
-  - `update(id, data)` - Update podcast
-  - `delete(id)` - Delete podcast
-  - `retry(id)` - Retry podcast
-  - `getStatus(id)` - Get status
-
-- [ ] **User API** (`lib/api/user.ts`)
-  - `getProfile()`
-  - `updateProfile(data)`
-  - `getSubscription()`
-  - `getUsage()`
-
-- [ ] **Custom Hooks** (`lib/hooks/`)
-  - `usePodcasts()` - List podcasts query
-  - `usePodcast(id)` - Single podcast query
-  - `useCreatePodcast()` - Create mutation
-  - `useDeletePodcast()` - Delete mutation
-  - `useSubscription()` - Subscription query
   - `useUsage()` - Usage query
 
 **Deliverable:** Fully functional podcast creation and management system (core features)

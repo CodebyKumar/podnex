@@ -130,9 +130,8 @@ export function PodcastCard({
           <div className="flex items-center gap-3 text-xs">
             {/* STATUS BADGE: State indicator (Completed/Processing/Failed/Queued) */}
             <div className={cn(
-              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border font-medium",
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-white",
               statusConfig.bg,
-              statusConfig.color,
               statusConfig.border
             )}>
               <StatusIcon className={cn(
@@ -151,7 +150,7 @@ export function PodcastCard({
                   e.stopPropagation();
                   onRetry?.(podcast);
                 }}
-                className="text-amber-600 border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/50 h-7 px-2.5 text-xs font-semibold"
+                className="text-white border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/50 h-7 px-2.5 text-xs"
                 aria-label="Retry podcast generation"
               >
                 <RefreshCw className="h-3.5 w-3.5 mr-1" />
@@ -161,7 +160,7 @@ export function PodcastCard({
             
             {/* Duration - Only for Completed */}
             {podcast.audioDuration && podcast.status === "COMPLETED" && (
-              <div className="inline-flex items-center gap-1 text-muted-foreground/90 font-medium">
+              <div className="inline-flex items-center gap-1 text-muted-foreground/90">
                 <Clock className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="whitespace-nowrap">{formatDuration(podcast.audioDuration)}</span>
               </div>
@@ -169,7 +168,7 @@ export function PodcastCard({
 
             {/* Progress - Only for Processing */}
             {podcast.status === "PROCESSING" && (
-              <span className="text-muted-foreground/90 font-medium">
+              <span className="text-muted-foreground/90">
                 {podcast.progress || 0}% • {podcast.currentStep || "Processing"}
               </span>
             )}
@@ -190,7 +189,7 @@ export function PodcastCard({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Timestamp - Aligned Vertically */}
-          <div className="flex-1 min-w-0 text-xs text-muted-foreground/90 font-medium text-right">
+          <div className="flex-1 min-w-0 text-xs text-muted-foreground/90 text-right">
             <span suppressHydrationWarning className="block truncate">
               {formatDistanceToNow(new Date(podcast.createdAt), { addSuffix: true })}
             </span>
@@ -266,9 +265,8 @@ export function PodcastCard({
       <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-border/30" style={{ minHeight: "64px" }}>
         {/* STATUS BADGE: Colored label showing podcast state (Completed/Processing/Failed/Queued) */}
         <div className={cn(
-          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm",
+          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm text-white",
           statusConfig.bg,
-          statusConfig.color,
           statusConfig.border
         )}>
           <StatusIcon className={cn(
@@ -300,10 +298,10 @@ export function PodcastCard({
         {podcast.status === "PROCESSING" && (
           <div className="mb-3">
             <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-muted-foreground font-medium truncate pr-2">
+              <span className="text-muted-foreground truncate pr-2">
                 {podcast.currentStep || "Processing podcast"}
               </span>
-              <span className="font-bold text-amber-600 shrink-0">
+              <span className="text-white shrink-0">
                 {podcast.progress || 0}%
               </span>
             </div>
@@ -315,13 +313,13 @@ export function PodcastCard({
 
         {/* Error Message - One Line Max, Only for Failed */}
         {podcast.status === "FAILED" && (
-          <div className="text-xs text-red-500/90 font-medium mb-3 line-clamp-1">
+          <div className="text-xs text-red-500/90 mb-3 line-clamp-1">
             Generation failed. Please try again.
           </div>
         )}
         
         {/* Metadata - Pushed to Bottom */}
-        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground/90 mt-auto">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground/90 mt-auto">
           <Clock className="h-3.5 w-3.5 flex-shrink-0" />
           <span suppressHydrationWarning className="truncate">
             {formatDistanceToNow(new Date(podcast.createdAt), { addSuffix: true })}
@@ -336,13 +334,13 @@ export function PodcastCard({
           <div className="flex items-center min-w-[80px]">
             {podcast.status === "FAILED" && (
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
                 onClick={() => onRetry?.(podcast)}
-                className="bg-amber-600 hover:bg-amber-700 text-white h-8 px-3 text-xs font-semibold shadow-sm"
+                className="text-white border-amber-500/30 hover:bg-amber-500/10 hover:border-amber-500/50 h-7 px-2.5 text-xs"
                 aria-label="Retry podcast generation"
               >
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
                 Retry
               </Button>
             )}
